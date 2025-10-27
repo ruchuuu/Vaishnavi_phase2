@@ -20,5 +20,40 @@ picoCTF{beep_boop_im_in_space}
 - At first, I tried to go with Morse code and Spectrogram. But when, the file didn't seem to be coded like that, I used the hints to reach SSTV encoder.
 ## Resources:
 - https://sstv-decoder.mathieurenaud.fr/
-
 - https://en.wikipedia.org/wiki/Apollo_11_missing_tapes
+***
+# 2. tunn3l v1s10n
+>   Recover the flag from the file.
+## Solution:
+- The has no extension, running it through online hex editor tool gave 1st line BM which indicates .bmp file.
+- Changing the extension still does not open the file and trying to convert to jpg shows that the file is corrupted.
+- Usual guess is corruption in header. Then I noticed BA D0 values where there should be integers.
+<img width="1910" height="1028" alt="Screenshot 2025-10-28 022157" src="https://github.com/user-attachments/assets/5f6329ca-8a24-42d2-98ac-207c8275237a" />
+- So I searched the correct values for a non-corrupted BMP file and changed them to 36 00 and 28 00.
+- This gave a bmp file that seemed like an incomplete image and had a fake flag.
+<img width="1405" height="714" alt="Screenshot 2025-10-28 022903" src="https://github.com/user-attachments/assets/083aa49f-9fb0-49b0-a160-a7c654454d6a" />
+- Now finding current size of the image- 1134x306 which converted to hex is 0x46E and 0x132 respectively.
+- We have to change the height of the image, which for a guess I took 840- 0x348 in hex.
+- I changed 32 01 to 48 03
+<img width="1914" height="1025" alt="Screenshot 2025-10-28 023514" src="https://github.com/user-attachments/assets/e06a634e-c57c-453f-b9eb-39c47c3ae53f" />
+- This gave me the clear picture with correct flag.
+<img width="1416" height="724" alt="Screenshot 2025-10-28 023242" src="https://github.com/user-attachments/assets/206c7552-9731-44ea-9cf7-cd209853489e" />
+
+## Flag:
+```
+picoCTF{qu1t3_a_v13w_2020}
+```
+
+## Concepts Learnt:
+- Headers and offset values of .bmp and other file extensions.
+- 0x46E is represented as 6E 04. This is little-endian format.
+- BMP files use little-endian format: The first byte is the low-order (smallest) part and second byte is the high-order (larger) part.
+- BMP does not automatically add missing pixel data if I change height, I'm just changing the header.
+- If the new header exceeds the actual file size, the BMP viewer sees an error.
+  
+## Notes:
+- I tried to change height to 900 and the file still won't open because it exceeded the actual file size. So, I decreased it and made a guess of 840 pixels which was within limits.
+  
+## Resources:
+- https://hex-works.com/
+- https://www.geeksforgeeks.org/dsa/little-and-big-endian-mystery/
