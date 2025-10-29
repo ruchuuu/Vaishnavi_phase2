@@ -54,3 +54,24 @@ picoCTF{549698}
 
 ## Resources:
 - https://www.geeksforgeeks.org/c/gdb-step-by-step-introduction/
+***
+
+# 2. Vault-door-3
+> Find out the correct password to the vault with the help of the given source code.
+## Solution:
+- Through the hint it is understood that we have to figure out the right password by iterating through the loop.
+- So manually doing the logic with charAt() function, the first 8 characters are the same as buffer (password returned).
+- Next 8 are equal to (23-i) value of buffer.
+- After that, every even index is equal to (46-i) value of buffer.
+- Odd indices stay the same.
+- This gives the password jU5t_a_s1mpl3_an4gr4m_4_u_79958f. Which is the flag.
+![vault](https://github.com/user-attachments/assets/615f53a6-36d6-4cd6-9577-23035ba29f51)
+## Flag:
+```
+picoCTF{jU5t_a_s1mpl3_an4gr4m_4_u_79958f}
+```
+## Concepts Learnt:
+- charAt(): returns the character at the specified index in a string in Java.
+## Resources:
+- https://www.w3schools.com/java/ref_string_charat.asp
+***
