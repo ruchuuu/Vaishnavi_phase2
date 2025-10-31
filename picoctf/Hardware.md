@@ -76,3 +76,61 @@ TFCCTF{Th1s_1s_som3_s1mpl3_4rdu1no_f1rmw4re}
 - https://www.jonaslieb.de/blog/arduino-ghidra-intro/
 - https://www.dcode.fr/xor-cipher
 ***
+# 3. I like Logic
+> i like logic and i like files, apparently, they have something in common, what should my next step be. With the help of the challenge.sal file, find the flag.
+## Solution:
+- .sal means that it's a Salae file which can be opened in Salae Logic2 software as the name and description of challenge also suggests.
+- Opening the file in Logic2, shows graph only for channel 3, not any other channels.
+- Running different analyzers, Async serial makes a difference.
+- Setting input channel as channel 3 and bit rate 9600 bits/s, we get hex values above the graph.
+  <img width="1920" height="1080" alt="Screenshot (153)" src="https://github.com/user-attachments/assets/28024d97-3b0b-4f5e-afe6-fa45eefe6328" />
+  
+- They don't seem much helpful at first, but after watching tutorials on Logic2, I understood that we can change the values to ASCII, binary, decimal, etc.
+- Changing hex to ASCII, we see that it's a snippet from the book 'The Lost World'. Sending the data output to a text file, the whole snippet had better readability.
+- Scrolling through the text, the flag was present in between the sentences.
+  <img width="1920" height="1080" alt="Screenshot (158)" src="https://github.com/user-attachments/assets/a5b839ab-3b87-46ce-a09f-61c255f992cb" />
+
+```
+.... "You think he drew that animal?"
+
+"Of course he did.  Who else?"
+
+"Well, then, the photographs?"
+
+"There was nothing in the photographs.  By your own admission you only
+saw a bird."
+
+FCSC{b1dee4eeadf6c4e60aeb142b0b486344e64b12b40d1046de95c89ba5e23a9925}
+
+"A pterodactyl."
+
+"That's what HE says.  He put the pterodactyl into your head."
+
+"Well, then, the bones?"
+
+"First one out of an Irish stew.  Second one vamped up for the
+occasion.  If you are clever and know your business you can fake a bone
+as easily as you can a photograph." ....
+```
+## Flag:
+```
+FCSC{b1dee4eeadf6c4e60aeb142b0b486344e64b12b40d1046de95c89ba5e23a9925}
+```
+## Concept Learnt:
+- A SAL file is a capture file in Saleae Logic Analyzer.
+- Serial Peripheral Interface (SPI): SPI uses a Clock signal, two data signals (MISO and MOSI), and an Enable signal generic enough to decode basic synchronous serial in a file.
+- Async (asynchronous) serial communication is a very generic term that means any data that is transmitted serially i.e., one bit at a time.
+- Many systems, modems, GPS modules, microcontrollers, Arduino boards, and old PCs standardized on 9600 bit rate.
+## Notes:
+- Initially, I tried to read the .bin files but nothing valuable came out of it.
+- I first used SPI analyzer but got nothing on the output.
+- With async, when I saw hex bits, I thought that is standard and not of use.
+- But, seeing the tutorial, I converted it to ASCII and got actual readable text.
+- After, getting the text, I missed the flag at first and thought would get any clues regarding the book The Lost World. But reading it again, I noticed the flag.
+- Also with the characters wrapped in the flag, I thought they may decode to some legible text. But no cipher gave readable characters.
+- Even used 'pterodactyl' and 'bones' (words from text that could have been hints) as keys to decipher but got unreadable characters.
+## Resources:
+- https://exploit-notes.hdks.org/exploit/hardware/sal-logic-analysis/
+- https://support.saleae.com/product/user-guide/protocol-analyzers/analyzer-user-guides/using-spi
+- https://support.saleae.com/product/user-guide/protocol-analyzers/analyzer-user-guides/using-async-serial
+- https://www.youtube.com/watch?v=Ak9R4yxQPhs&list=PLUdiafhsYS1R_0x4Vo0OXf4pD7HkiBnHt&index=3
