@@ -119,3 +119,74 @@ picoCTF{custom_d2cr0pt6d_49fbee5b}
 - https://www.geeksforgeeks.org/dsa/xor-cipher/
 - https://www.geeksforgeeks.org/computer-networks/implementation-diffie-hellman-algorithm/
 ***
+# 3. rsa_oracle
+> Can you abuse the oracle? An attacker was able to intercept communications between a bank and a fintech company. They managed to get the message (ciphertext) and the password that was used to encrypt the message. Figure out how to decrypt the password in this connection nc titan.picoctf.net 64327 since the server can decrypt anything except the password.
+
+## Solution:
+- Since the password itself cannot be decrypted by the server, we need to find a way to trick the server.
+- If we send 2 for encryption, we get back 2^e mod n and the password (m^e mod n) to the server, this will make (2m)^e mod n as ciphertext and decrypt it.
+- Then divide 2 from the decrypted plaintext to get the actual message.
+- Come up with a python script to send the connection this cipher.
+
+```python
+from pwn import * # pwntools python library for remote(), sendline(), recvline()
+from Crypto.Util.number import long_to_bytes, bytes_to_long # pycryptodome library for int to raw-bytes/big-endian conversions
+
+cipher = 2336150584734702647514724021470643922433811330098144930425575029773908475892259185520495303353109615046654428965662643241365308392679139063000973730368839
+
+r = remote('titan.picoctf.net', 64327) # create connection
+
+def decrypt_oracle(ct): # takes a ciphertext(ct) and sends it to the oracle to get the decrypted message modulus n
+    r.sendlineafter(b'decrypt.', b'D') # waits for decrypt prompt and enters D
+    r.sendlineafter(b': ', str(ct).encode()) # waits for a prompt ending with ': ', and sends the ciphertext ct as a string.
+    try:
+        r.recvuntil(b'mod n): ') # waits for the oracle to print a prompt that ends with mod n): (oracle will output the decrypted value mod n next).
+        h = r.recvline().strip().decode() # read the next line from server, removes spaces and converts to string
+        if len(h) % 2 != 0: # ensuring even bytes for hex decoding
+            h = '0' + h
+        return bytes_to_long(bytes.fromhex(h)) # returns the integer value represented by the byte string.
+    except EOFError: # if server closes, return none
+        return None
+
+def encrypt_oracle(pt):
+    r.sendlineafter(b'decrypt.', b'E') # enter E instead of D as before
+    r.sendlineafter(b': ', long_to_bytes(pt)) # sends a converted plaintext to server (integer to its big‑endian byte representation)
+    r.recvuntil(b'mod n) ')
+    return int(r.recvline().strip().decode()) # returns integer format of the string
+
+res = decrypt_oracle(cipher * encrypt_oracle(2)) # gets 2 encrypted as 2^e mod n and ciphertext*(2^e mod n) = m^e*2^e= (2m)^e mod n. Decrypting this cipher will give the plaintext*2.
+if res is None: # any error case
+    print(None)
+else:
+    print(long_to_bytes(res // 2)) # divide 2*m by 2 and coverts int to bytes of the result
+
+r.close() # close connection
+```
+- Running this gave plaintext 60f50 which is the decryption password of open ssl for secret file. Entering it gives the flag.
+```
+(myenv) vaish@DESKTOP-59LUGSG:/mnt/c/Users/Vaishnavi/Downloads$ python3 rsa4.py
+[+] Opening connection to titan.picoctf.net on port 64327: Done
+b'60f50'
+[*] Closed connection to titan.picoctf.net port 64327
+(myenv) vaish@DESKTOP-59LUGSG:/mnt/c/Users/Vaishnavi/Downloads$ openssl enc -aes-256-cbc -d -in secret.enc
+enter AES-256-CBC decryption password:
+*** WARNING : deprecated key derivation used.
+Using -iter or -pbkdf2 would be better.
+picoCTF{su((3ss_(r@ck1ng_r3@_60f50766}
+```
+## Flag:
+```
+picoCTF{su((3ss_(r@ck1ng_r3@_60f50766}
+```
+
+## Concepts Learnt:
+- RSA multiplicative property: (m1^e) * (m2^e)=(m1 * m2)^e (modn)
+- OpenSSL is a cryptography software library or toolkit that secures communication over computer networks.
+- pwntools python library for remote(), sendline(), recvline() commands
+- pycryptodome library for int to raw-bytes/big-endian conversions
+
+## Resources:
+- https://crypto.stackexchange.com/questions/24880/how-multiplicative-property-of-rsa-can-be-exploited
+- https://www.geeksforgeeks.org/linux-unix/practical-uses-of-openssl-command-in-linux/
+- https://pypi.org/project/pycryptodome/
+- https://docs.pwntools.com/en/stable/
