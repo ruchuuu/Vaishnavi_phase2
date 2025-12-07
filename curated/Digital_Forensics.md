@@ -101,4 +101,55 @@ GCTF{m0zarella_f1ref0x_p4ssw0rd}
 # 4. RAR of the Abyss
 > Two philosophers peer into the networked abyss and swap a secret. Use the secret to decrypt the Abyss’ RAwR and pull your flag from the void.
 # Solution:
-- 
+- Enter the pcap file in Wireshark. Follow TCP stream of packets where length>0.
+- Stream 2 gives the rar file that contains the flag. Convert data to raw. Use XOR decrypt to covert to hex and save in binary file.
+- Save the file as .rar and open using WinRAR.
+- Password is given in TCP stream 4: b3y0ndG00dand3vil
+- Use it to open the .rar file. Open flag.txt to get the flag.
+## Flag:
+```
+nite{thus_sp0k3_th3_n3tw0rk_f0r3ns1cs_4n4lyst}
+```
+## Concepts Learnt:
+- len>0 means that there is more data in the TCP stream. This helps in directly following the packets with data.
+## Notes:
+- At first I tried to read the flag through the dump itself. Then realised that the Rar! header means to convert the file to rar.
+## Resources:
+- https://ctf-wiki.mahaloz.re/misc/archive/rar/
+***
+# 5. Re:Draw
+> Her screen went black and a strange command window flickered to life, lines of text flashed across before everything went silent. Moments later, the system crashed. By sheer luck, we recovered a memory dump. Note: There are three stages to this challenge and you will find three flags. What we know: just before the crash, a black command window flickered across the screen, something in its output might still be visible if you dig through memory. She was drawing when it happened, and remnants of a painting program linger, which could reveal more if inspected in the right way. Finally, a mysterious archive hides deeper in memory, likely holding the last piece of her work.
+## Solution: 
+- Use volatality imageinfo plugin to see the suggested profiles. In this case, it is Win7SP1x64.
+- Use pslist with this profile to see the timing and PID of each program.
+- Use consoles plugin to see what was last at the command prompt before system crash.
+- We get this string ZmxhZ3t0aDFzXzFzX3RoM18xc3Rfc3Q0ZzMhIX0= which base64 decoded gives flag{th1s_1s_th3_1st_st4g3!!}.
+- memdump plugin to dump the memory of mspaint.exe to .dmp file. Convert .dmp to .dat file.
+- Use GIMP3 to open the file. Change the offset, height and width to get clearer image.
+<img width="1920" height="1080" alt="Screenshot (178)" src="https://github.com/user-attachments/assets/59433679-6dfb-48cd-844d-2e016d7e63c9" />
+<img width="1920" height="1080" alt="Screenshot (180)" src="https://github.com/user-attachments/assets/938e704f-1722-4473-ae69-a08cf65791c9" />
+
+- 2nd flag is flag{G00d_BoY_good_girl}
+- Put the output of filescan plugin in a .txt file. Use grep to find .rar/.zip file in the output.
+- Use 7z x to extract archive with the offset of \Device\HarddiskVolume2\Users\Alissa Simpson\Documents\Important.rar
+- Also we get to know that the password is NTLM hash (uppercase) of Alissa's password.
+- Use hashdump plugin to get the password Alissa Simpson:1003:aad3b435b51404eeaad3b435b51404ee:f4ff64c8baac57d22f22edc681055ba6:::
+- Password becomes F4FF64C8BAAC57D22F22EDC681055BA6.
+- Use unrar x to extract the file with the password.
+- Transfers the flag to flag3.png
+<img width="500" height="500" alt="flag3" src="https://github.com/user-attachments/assets/1cf4d809-d10d-495b-80de-aecbab317b13" />
+
+- 3rd flag is flag{w3ll_3rd_stage_was_easy}
+## Flag: 
+```
+flag{th1s_1s_th3_1st_st4g3!!}
+flag{G00d_BoY_good_girl}
+flag{w3ll_3rd_stage_was_easy}
+```
+## Concepts learnt:
+- Volatility is a powerful tool specifically designed for analyzing and extracting information from computer memory (RAM) images.
+- Volatility 2 is Profile-based (--profile=<PROFILE>). Often used when analysts already have known profiles or prefer Windows-specific plugins.
+## Resources:
+- https://hackers-arise.com/digital-forensics-volatility-memory-analysis-guide-part-2/
+- https://infosecwriteups.com/memory-dump-analysis-by-using-volatility-framework-742d70663d41
+- https://medium.com/@0x0Aleem/practical-memory-forensics-with-volatility-2-3-windows-and-linux-cheat-sheet-ef5eee325863
